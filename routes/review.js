@@ -5,6 +5,7 @@ const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
 const Review = require('../models/review');
 const { reviewSchema } = require('../validatorSchemas')
+const { isLoggedIn } = require('../middleware')
 
 function validateReview(req, res, next) {
     const { error } = reviewSchema.validate(req.body)
@@ -17,7 +18,7 @@ function validateReview(req, res, next) {
     }
 }
 
-router.post('/', validateReview, wrapAsync(async (req, res) => {
+router.post('/', validateReview, isLoggedIn, wrapAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id)
     const review = new Review(req.body.review)
     campground.reviews.push(review)
@@ -27,7 +28,7 @@ router.post('/', validateReview, wrapAsync(async (req, res) => {
     res.redirect(`/campgrounds/${req.params.id}`)
 }))
 
-router.delete('/:reviewId', wrapAsync(async (req, res) => {
+router.delete('/:reviewId', isLoggedIn, wrapAsync(async (req, res) => {
     const { id, reviewId } = req.params
     await Review.findByIdAndDelete(reviewId)
     await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } })
