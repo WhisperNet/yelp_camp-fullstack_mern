@@ -49,9 +49,11 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(mongoSanitize())
 app.use(helmet({ contentSecurityPolicy: false }))
 
+const secret = process.env.SECRET
+
 const store = new MongoDBStore({
     url: dbUrl,
-    secret: 'findPass',
+    secret,
     touchAfter: 24 * 3600
 })
 
@@ -62,7 +64,7 @@ store.on('error', function (e) {
 const sessionConfig = {
     store,
     name: 'db02baefecc63791399b79bd597c63f2afeda47d4ede42dc34b5d0892fb086b9',
-    secret: 'findPass',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
