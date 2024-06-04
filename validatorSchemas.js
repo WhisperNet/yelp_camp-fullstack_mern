@@ -1,5 +1,31 @@
 const Joi = require('joi')
-const review = require('./models/review')
+
+const htmlSanitizer = require('sanitize-html')
+
+
+
+const extension = (joi) => ({
+    type: 'string',
+    base: joi.string(),
+    message: {
+        'string.escapeHTML': '{{#label}} must not include HTML'
+    },
+    rules: {
+        escapeHTML: {
+            validate(value, helpers) {
+                const clean = htmlSanitizer(value, {
+                    allowedTags: [],
+                    allowedAtributes: {},
+                })
+                if (clean !== value) return helpers.error('string.escapeHTML', { value })
+                return clean
+            }
+        }
+    }
+})
+
+
+
 module.exports.campgroundSchema = Joi.object({
     campground: Joi.object({
         title: Joi.string().required(),
